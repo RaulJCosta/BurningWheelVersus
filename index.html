@@ -1,0 +1,2707 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Exact combinatorial odds for opposed Burning Wheel dice pools.">
+  <title>Burning Wheel Versus Odds</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202322;
+      --muted-ink: #666861;
+      --paper: #f2eee5;
+      --paper-deep: #e5ded0;
+      --night: #141718;
+      --night-soft: #202526;
+      --rule: rgba(32, 35, 34, 0.16);
+      --brass: #a8762b;
+      --win: #006f7e;
+      --win-bright: #00a6b4;
+      --tie: #777b7a;
+      --tie-bright: #c7cbc9;
+      --tie-win: #83b9bc;
+      --tie-lose: #a48681;
+      --lose: #762f2a;
+      --lose-bright: #8e3832;
+      --shadow: 0 30px 80px rgba(0, 0, 0, 0.34);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-width: 320px;
+      background: var(--night);
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 1rem;
+      line-height: 1.5;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(168, 118, 43, 0.13), transparent 29rem),
+        radial-gradient(circle at 85% 90%, rgba(118, 47, 42, 0.11), transparent 34rem),
+        var(--night);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .page {
+      width: min(100% - 2rem, 60rem);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: clamp(2rem, 6vw, 5rem) 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .calculator {
+      width: 100%;
+      overflow: hidden;
+      background: var(--paper);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 1.1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .masthead {
+      padding: clamp(1.35rem, 4vw, 2.5rem) clamp(1.25rem, 5vw, 3.75rem) clamp(0.9rem, 2vw, 1.25rem);
+      color: #f5f1e8;
+      background: var(--night-soft);
+      border-bottom: 0.25rem solid var(--brass);
+    }
+
+    .outcome-name {
+      margin: 0;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 700;
+      line-height: 1.05;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      letter-spacing: -0.035em;
+    }
+
+    .workspace {
+      padding: clamp(0.9rem, 2.5vw, 1.5rem) clamp(1.5rem, 5vw, 3.75rem) clamp(1.5rem, 5vw, 3.75rem);
+    }
+
+    .intro-notes {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 2rem;
+      margin-bottom: 0.7rem;
+      color: var(--muted-ink);
+      font-size: 0.8rem;
+    }
+
+    .intro-notes p {
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    .intro-notes p:last-child {
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .test-case-title {
+      margin: 0 0 0.8rem;
+      font-size: clamp(1.45rem, 3vw, 1.9rem);
+      letter-spacing: -0.02em;
+    }
+
+    .test-divider {
+      height: 0;
+      margin: clamp(1.35rem, 3vw, 1.9rem) 0;
+      border: 0;
+      border-top: 1px solid rgba(32, 35, 34, 0.28);
+    }
+
+    .players {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(11.5rem, 12.5rem) minmax(0, 1fr);
+      align-items: stretch;
+      gap: clamp(0.65rem, 2vw, 1.25rem);
+    }
+
+    fieldset {
+      min-width: 0;
+      margin: 0;
+      padding: clamp(1rem, 3vw, 1.6rem);
+      border: 1px solid var(--rule);
+      border-top-width: 0.35rem;
+      border-radius: 0.7rem;
+      background: rgba(255, 255, 255, 0.38);
+    }
+
+    .player-one {
+      border-top-color: var(--win);
+    }
+
+    .player-two {
+      border-top-color: var(--lose);
+    }
+
+    legend {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .player-heading {
+      margin-bottom: 1.1rem;
+    }
+
+    .pool-name {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.3rem, 3vw, 1.75rem);
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .player-one .pool-name {
+      color: var(--win);
+    }
+
+    .player-two .pool-name {
+      color: var(--lose);
+    }
+
+    .pool-input-label {
+      min-height: 1.7rem;
+      display: flex;
+      align-items: center;
+      margin: 0;
+      color: var(--muted-ink);
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .pool-label-row {
+      display: grid;
+      grid-template-columns: 4.6rem minmax(0, 1fr);
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .open-ended-toggle {
+      width: 100%;
+      height: 1.7rem;
+      padding: 0 0.45rem;
+      color: var(--ink);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.025em;
+      line-height: 1;
+      background: var(--tie-bright);
+      border: 1px solid var(--ink);
+      border-radius: 0.35rem;
+      cursor: pointer;
+      transition: color 150ms ease, background-color 150ms ease,
+        border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .open-ended-toggle:hover {
+      background: #d5d8d6;
+    }
+
+    .open-ended-toggle[aria-pressed="true"] {
+      color: #d2a85d;
+      background: var(--night);
+      border-color: var(--brass);
+      box-shadow: inset 0 0 0 1px rgba(210, 168, 93, 0.18);
+    }
+
+    .open-ended-toggle[aria-pressed="true"]:hover {
+      background: #202526;
+    }
+
+    .open-ended-toggle:focus-visible {
+      outline: 3px solid rgba(168, 118, 43, 0.42);
+      outline-offset: 2px;
+    }
+
+    .pool-entry {
+      display: grid;
+      grid-template-columns: 4.6rem minmax(0, 1fr);
+      gap: 0.6rem;
+    }
+
+    .shade-picker {
+      position: relative;
+      width: 4.6rem;
+      height: 4.6rem;
+    }
+
+    .shade-picker::after {
+      content: "";
+      position: absolute;
+      right: 0.42rem;
+      bottom: 0.38rem;
+      width: 0;
+      height: 0;
+      border-inline: 0.23rem solid transparent;
+      border-top: 0.32rem solid #171919;
+      pointer-events: none;
+    }
+
+    .shade-picker[data-shade="black"]::after {
+      border-top-color: #ffffff;
+    }
+
+    .shade-select {
+      width: 100%;
+      height: 100%;
+      padding: 0 0.55rem 0 0;
+      appearance: none;
+      -webkit-appearance: none;
+      color: #ffffff;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 5vw, 2.75rem);
+      font-weight: 800;
+      line-height: 1;
+      text-align: center;
+      text-align-last: center;
+      background: #111414;
+      border: 2px solid #111414;
+      border-radius: 0.55rem;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .shade-select[data-shade="grey"] {
+      color: #111414;
+      background: #aeb3b2;
+      border-color: #111414;
+      box-shadow: none;
+    }
+
+    .shade-select[data-shade="white"] {
+      color: #111414;
+      background: #ffffff;
+      border-color: #111414;
+      box-shadow: none;
+    }
+
+    .shade-select option {
+      color: #111414;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      background: #ffffff;
+    }
+
+    .player-one .shade-select:focus-visible {
+      box-shadow: 0 0 0 3px rgba(0, 166, 180, 0.22);
+    }
+
+    .player-two .shade-select:focus-visible {
+      box-shadow: 0 0 0 3px rgba(118, 47, 42, 0.2);
+    }
+
+    .number-input {
+      width: 100%;
+      height: 4.6rem;
+      padding: 0.4rem 0.8rem;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 5vw, 2.75rem);
+      font-weight: 700;
+      line-height: 1;
+      text-align: center;
+      background: #fbfaf6;
+      border: 2px solid rgba(32, 35, 34, 0.23);
+      border-radius: 0.55rem;
+      outline: none;
+      font-variant-numeric: tabular-nums;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .player-one .number-input:focus {
+      border-color: var(--win);
+      box-shadow: 0 0 0 3px rgba(21, 95, 105, 0.16);
+    }
+
+    .player-two .number-input:focus {
+      border-color: var(--lose);
+      box-shadow: 0 0 0 3px rgba(166, 63, 61, 0.15);
+    }
+
+    .number-input[aria-invalid="true"] {
+      border-color: var(--lose);
+      box-shadow: 0 0 0 3px rgba(166, 63, 61, 0.14);
+    }
+
+    .number-input.limit-flash {
+      animation: dice-limit-flash 520ms ease-out;
+    }
+
+    @keyframes dice-limit-flash {
+      0% {
+        color: #ffffff;
+        background-color: var(--lose-bright);
+        border-color: var(--lose);
+        box-shadow: 0 0 0 3px rgba(118, 47, 42, 0.22);
+      }
+
+      100% {
+        color: var(--ink);
+        background-color: #fbfaf6;
+        border-color: rgba(32, 35, 34, 0.23);
+        box-shadow: none;
+      }
+    }
+
+    .slider-wrap {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.65rem;
+      margin-top: 1rem;
+    }
+
+    .slider-limit {
+      color: var(--muted-ink);
+      font-size: 0.75rem;
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 1.4rem;
+      margin: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 0.4rem;
+      border-radius: 99px;
+      background:
+        linear-gradient(to right, var(--slider-color) 0 var(--fill), #c9c5bb var(--fill) 100%);
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 0.4rem;
+      border-radius: 99px;
+      background:
+        linear-gradient(to right, var(--slider-color) 0 var(--fill), #c9c5bb var(--fill) 100%);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      width: 1.25rem;
+      height: 1.25rem;
+      margin-top: -0.425rem;
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--slider-color);
+      border: 3px solid #f8f5ed;
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 0.95rem;
+      height: 0.95rem;
+      background: var(--slider-color);
+      border: 3px solid #f8f5ed;
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    input[type="range"]:focus-visible {
+      outline: 3px solid rgba(168, 118, 43, 0.45);
+      outline-offset: 3px;
+      border-radius: 0.5rem;
+    }
+
+    .player-one input[type="range"] {
+      --slider-color: var(--win);
+    }
+
+    .player-two input[type="range"] {
+      --slider-color: var(--lose);
+    }
+
+    .versus-column {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 0;
+    }
+
+    .versus-token {
+      width: clamp(2.5rem, 6vw, 3.75rem);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      color: #f5f1e8;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(0.9rem, 2vw, 1.15rem);
+      font-weight: 800;
+      background: var(--ink);
+      border: 0.2rem solid var(--brass);
+      border-radius: 50%;
+      box-shadow: 0 0 0 0.35rem var(--paper);
+    }
+
+    .defender-control {
+      width: 100%;
+      margin: 1.25rem 0 0;
+      text-align: center;
+    }
+
+    .defender-label {
+      display: block;
+      margin-bottom: 0.35rem;
+      color: var(--muted-ink);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .defender-control input[type="range"] {
+      --slider-color: var(--ink);
+      --fill: 50%;
+      width: calc(100% - 1rem);
+    }
+
+    .defender-control input[type="range"]::-webkit-slider-runnable-track {
+      height: 0.5rem;
+      background: linear-gradient(
+        to right,
+        var(--win-bright) 0 31%,
+        var(--tie-bright) 46% 54%,
+        var(--lose-bright) 69% 100%
+      );
+      border: 1px solid rgba(32, 35, 34, 0.28);
+    }
+
+    .defender-control input[type="range"]::-moz-range-track {
+      height: 0.5rem;
+      background: linear-gradient(
+        to right,
+        var(--win-bright) 0 31%,
+        var(--tie-bright) 46% 54%,
+        var(--lose-bright) 69% 100%
+      );
+      border: 1px solid rgba(32, 35, 34, 0.28);
+    }
+
+    .defender-control input[type="range"]::-webkit-slider-thumb {
+      margin-top: -0.425rem;
+      background: var(--ink);
+      border-color: var(--paper);
+    }
+
+    .defender-control input[type="range"]::-moz-range-thumb {
+      background: var(--ink);
+      border-color: var(--paper);
+    }
+
+    .defender-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      margin-top: 0.05rem;
+      color: var(--muted-ink);
+      font-size: 0.68rem;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .defender-options span:first-child {
+      text-align: left;
+    }
+
+    .defender-options span:last-child {
+      text-align: right;
+    }
+
+    .defender-control[data-defender="player-one"] [data-option="player-one"] {
+      color: var(--win);
+      font-weight: 850;
+    }
+
+    .defender-control[data-defender="none"] [data-option="none"] {
+      color: var(--ink);
+      font-weight: 850;
+    }
+
+    .defender-control[data-defender="player-two"] [data-option="player-two"] {
+      color: var(--lose);
+      font-weight: 850;
+    }
+
+    .results {
+      margin-top: clamp(0.9rem, 2vw, 1.25rem);
+    }
+
+    .results-heading {
+      width: min(100%, 45rem);
+      margin: 0 auto 0.75rem;
+    }
+
+    h2 {
+      font-size: clamp(1.55rem, 4vw, 2.1rem);
+      letter-spacing: -0.02em;
+    }
+
+    .probability-figure {
+      width: min(100%, 45rem);
+      margin: 0 auto;
+    }
+
+    .result-bar {
+      width: 100%;
+      height: clamp(2.5rem, 7vw, 3.25rem);
+      display: flex;
+      overflow: hidden;
+      background: var(--tie);
+      border: 0.25rem solid var(--ink);
+      border-radius: 0.45rem;
+      box-shadow: 0 5px 0 rgba(32, 35, 34, 0.12);
+    }
+
+    .bar-segment {
+      min-width: 0;
+      flex-basis: 0;
+      transition: flex-grow 220ms ease;
+    }
+
+    .bar-win {
+      background: var(--win-bright);
+    }
+
+    .bar-tie {
+      background: var(--tie-bright);
+      transition: flex-grow 220ms ease, background-color 180ms ease;
+    }
+
+    .result-bar[data-defender="player-one"] .bar-tie {
+      background: var(--tie-win);
+    }
+
+    .result-bar[data-defender="player-two"] .bar-tie {
+      background: var(--tie-lose);
+    }
+
+    .bar-lose {
+      background: var(--lose-bright);
+    }
+
+    .result-labels {
+      position: relative;
+      width: 100%;
+      height: 3.1rem;
+      margin-top: 0.45rem;
+    }
+
+    .outcome {
+      position: absolute;
+      top: 0;
+      display: grid;
+      justify-items: center;
+      min-width: 4.25rem;
+      white-space: nowrap;
+      transition: left 220ms ease;
+    }
+
+    .outcome[hidden] {
+      display: none;
+    }
+
+    .outcome-name {
+      margin-bottom: 0.1rem;
+      font-size: 0.69rem;
+    }
+
+    .outcome-value {
+      font-size: clamp(1.12rem, 3vw, 1.45rem);
+      font-weight: 850;
+      line-height: 1.2;
+      letter-spacing: -0.025em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .outcome-win {
+      color: var(--win);
+    }
+
+    .outcome-tie {
+      color: #646867;
+    }
+
+    .outcome-lose {
+      color: var(--lose);
+    }
+
+    .math-details {
+      width: 100%;
+      margin: 0.45rem auto 0;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.3);
+      border: 1px solid var(--rule);
+      border-radius: 0.6rem;
+    }
+
+    .math-details summary {
+      min-height: 3.25rem;
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      list-style: none;
+      user-select: none;
+    }
+
+    .math-details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .math-details summary::after {
+      content: "+";
+      color: var(--brass);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 1.45rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .math-details[open] summary::after {
+      content: "−";
+    }
+
+    .math-summary-hide {
+      display: none;
+    }
+
+    .math-details[open] .math-summary-show {
+      display: none;
+    }
+
+    .math-details[open] .math-summary-hide {
+      display: inline;
+    }
+
+    .math-content {
+      padding: 1rem;
+      border-top: 1px solid var(--rule);
+    }
+
+    .math-intro {
+      margin: 0;
+      color: var(--muted-ink);
+      font-size: 0.88rem;
+    }
+
+    .math-step-heading {
+      display: grid;
+      grid-template-columns: 1.8rem minmax(0, 1fr);
+      align-items: start;
+      gap: 0.65rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .math-step-number {
+      width: 1.8rem;
+      height: 1.8rem;
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: 850;
+      line-height: 1;
+      background: var(--ink);
+      border-radius: 50%;
+    }
+
+    .math-step-heading h3 {
+      margin: 0 0 0.2rem;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.05rem;
+      line-height: 1.25;
+    }
+
+    .math-guide {
+      margin: 0 0 0.85rem 2.45rem;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.55rem;
+      list-style: none;
+    }
+
+    .math-guide li {
+      padding: 0.65rem 0.7rem;
+      color: var(--muted-ink);
+      font-size: 0.8rem;
+      line-height: 1.4;
+      background: rgba(255, 255, 255, 0.42);
+      border: 1px solid var(--rule);
+      border-radius: 0.4rem;
+    }
+
+    .math-guide strong {
+      display: block;
+      margin-bottom: 0.12rem;
+      color: var(--ink);
+      font-family: "Cambria Math", Cambria, Georgia, serif;
+      font-size: 0.9rem;
+    }
+
+    .math-pools {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .math-card {
+      min-width: 0;
+      padding: 0.9rem;
+      background: #fbfaf6;
+      border: 1px solid var(--rule);
+      border-radius: 0.45rem;
+    }
+
+    .math-card-player-one {
+      border-top: 0.22rem solid var(--win);
+    }
+
+    .math-card-player-two {
+      border-top: 0.22rem solid var(--lose);
+    }
+
+    .math-card h3 {
+      margin: 0 0 0.65rem;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1rem;
+      line-height: 1.25;
+    }
+
+    .math-equation {
+      margin: 0.45rem 0;
+      overflow-wrap: anywhere;
+      color: var(--ink);
+      font-family: "Cambria Math", Cambria, Georgia, serif;
+      font-size: 0.92rem;
+      line-height: 1.65;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .math-equation sup,
+    .math-equation sub {
+      line-height: 0;
+    }
+
+    .math-counts {
+      margin: 0.6rem 0 0;
+      color: var(--muted-ink);
+      font-size: 0.82rem;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .math-comparison {
+      margin-top: 0.8rem;
+      padding: 1rem;
+      background: var(--paper-deep);
+      border-radius: 0.45rem;
+    }
+
+    .math-total {
+      margin: 0.25rem 0 0.8rem 2.45rem;
+      color: var(--muted-ink);
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+
+    .math-result {
+      display: grid;
+      grid-template-columns: 4.5rem minmax(0, 1fr);
+      align-items: baseline;
+      gap: 0.65rem;
+      margin-top: 0.45rem;
+    }
+
+    .math-result-name {
+      font-size: 0.74rem;
+      font-weight: 850;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .math-result-explanation {
+      margin: 0;
+      color: var(--muted-ink);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    .math-result-win {
+      color: var(--win);
+    }
+
+    .math-result-tie {
+      color: #646867;
+    }
+
+    .math-result-lose {
+      color: var(--lose);
+    }
+
+    .math-transform {
+      margin: 0.2rem 0 1rem 2.45rem;
+      padding: 0.85rem 0.95rem;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid var(--rule);
+      border-left: 0.22rem solid var(--lose);
+      border-radius: 0.45rem;
+    }
+
+    .math-transform h3,
+    .math-subheading {
+      margin: 0 0 0.45rem;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1rem;
+      line-height: 1.3;
+    }
+
+    .math-transform .math-equation {
+      margin-block: 0.65rem;
+    }
+
+    .math-mapping {
+      color: var(--ink);
+      font-family: "Cambria Math", Cambria, Georgia, serif;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .math-subheading {
+      margin: 1rem 0 0.25rem 2.45rem;
+    }
+
+    .math-error-note {
+      margin: 1rem 0 0;
+      padding: 0.85rem 0.95rem;
+      color: var(--muted-ink);
+      font-size: 0.82rem;
+      line-height: 1.55;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid var(--rule);
+      border-left: 0.22rem solid var(--brass);
+      border-radius: 0.45rem;
+    }
+
+    .math-error-note strong {
+      color: var(--ink);
+    }
+
+    .screen-reader-status {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 36rem) {
+      .page {
+        width: min(100% - 1rem, 60rem);
+        padding: 0.5rem 0;
+      }
+
+      .calculator {
+        border-radius: 0.8rem;
+      }
+
+      .masthead {
+        padding: 1.1rem 1.25rem 0.8rem;
+      }
+
+      .workspace {
+        padding: 0.75rem 0.85rem 1.5rem;
+      }
+
+      .intro-notes {
+        gap: 0.5rem;
+        font-size: 0.72rem;
+        line-height: 1.35;
+      }
+
+      .intro-notes p {
+        white-space: normal;
+      }
+
+      .players {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem 0.45rem;
+      }
+
+      .player-one {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      .player-two {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .versus-column {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        padding: 0.25rem 0 0;
+      }
+
+      fieldset {
+        padding: 0.8rem 0.6rem 0.9rem;
+      }
+
+      .player-heading {
+        display: block;
+        margin-bottom: 0.75rem;
+      }
+
+      .pool-name {
+        margin-top: 0.2rem;
+      }
+
+      .pool-input-label {
+        font-size: 0.8rem;
+      }
+
+      .pool-entry {
+        grid-template-columns: 3.4rem minmax(0, 1fr);
+        gap: 0.35rem;
+      }
+
+      .pool-label-row {
+        grid-template-columns: 3.4rem minmax(0, 1fr);
+        gap: 0.35rem;
+      }
+
+      .open-ended-toggle {
+        padding-inline: 0.2rem;
+        font-size: 0.75rem;
+      }
+
+      .shade-picker,
+      .number-input {
+        height: 3.4rem;
+      }
+
+      .shade-picker {
+        width: 3.4rem;
+      }
+
+      .shade-select,
+      .number-input {
+        padding-inline: 0.1rem;
+        font-size: clamp(1.55rem, 7vw, 2rem);
+      }
+
+      .slider-wrap {
+        gap: 0.35rem;
+      }
+
+      .versus-token {
+        width: 2.15rem;
+        border-width: 0.14rem;
+        box-shadow: 0 0 0 0.2rem var(--paper);
+        font-size: 0.77rem;
+      }
+
+      .defender-control {
+        width: min(100%, 12.5rem);
+        margin-top: 0.8rem;
+      }
+
+      .math-pools {
+        grid-template-columns: 1fr;
+      }
+
+      .math-guide {
+        grid-template-columns: 1fr;
+      }
+
+      .math-result {
+        grid-template-columns: 3.6rem minmax(0, 1fr);
+        gap: 0.4rem;
+      }
+
+      .math-transform {
+        margin-left: 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <article class="calculator" aria-labelledby="page-title">
+      <header class="masthead">
+        <h1 id="page-title">Burning Wheel Versus Odds</h1>
+      </header>
+
+      <main class="workspace">
+        <div class="intro-notes">
+          <p>Combinatorics, not simulated rolls.</p>
+          <p>Every possible success total is counted, then the two pools are compared.</p>
+        </div>
+
+        <section
+          class="test-case calculator-instance"
+          id="standard-calculator"
+          data-mode="standard"
+          aria-label="Player 1 versus Player 2"
+        >
+        <section class="players" aria-label="Opposed dice pools">
+          <fieldset class="player-one">
+            <legend>Player 1 dice pool</legend>
+            <div class="player-heading">
+              <p class="pool-name">Player 1</p>
+            </div>
+            <div class="pool-label-row">
+              <label class="pool-input-label" for="player-one-dice">Dice pool</label>
+              <button
+                class="open-ended-toggle"
+                type="button"
+                data-role="left-open-ended"
+                aria-label="Open-Ended Player 1 dice"
+                aria-pressed="false"
+              >Open-Ended</button>
+            </div>
+            <div class="pool-entry">
+              <div class="shade-picker" id="player-one-shade-picker" data-shade="black">
+                <select class="shade-select" id="player-one-shade" data-role="left-shade" data-shade="black" aria-label="Player 1 dice shade">
+                  <option value="black" selected>B</option>
+                  <option value="grey">G</option>
+                  <option value="white">W</option>
+                </select>
+              </div>
+              <input
+                class="number-input"
+                id="player-one-dice"
+                data-role="left-dice"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                max="50"
+                step="1"
+                value="2"
+              >
+            </div>
+            <div class="slider-wrap">
+              <span class="slider-limit" aria-hidden="true">1</span>
+              <input
+                id="player-one-slider"
+                data-role="left-slider"
+                type="range"
+                min="1"
+                max="10"
+                step="1"
+                value="2"
+                aria-label="Player 1 dice pool, quick range from 1 to 10"
+              >
+              <span class="slider-limit" aria-hidden="true">10</span>
+            </div>
+          </fieldset>
+
+          <div class="versus-column">
+            <div class="versus-token" aria-hidden="true">VS</div>
+            <section class="defender-control" id="defender-control" data-role="defender-control" data-defender="none" aria-labelledby="defender-label">
+              <label class="defender-label" id="defender-label" for="defender-slider">Defender</label>
+              <input
+                id="defender-slider"
+                data-role="defender-slider"
+                type="range"
+                min="-1"
+                max="1"
+                step="1"
+                value="0"
+                aria-valuetext="No defender"
+              >
+              <div class="defender-options" aria-hidden="true">
+                <span data-option="player-one">Player 1</span>
+                <span data-option="none">None</span>
+                <span data-option="player-two">Player 2</span>
+              </div>
+            </section>
+          </div>
+
+          <fieldset class="player-two">
+            <legend>Player 2 dice pool</legend>
+            <div class="player-heading">
+              <p class="pool-name">Player 2</p>
+            </div>
+            <div class="pool-label-row">
+              <label class="pool-input-label" for="player-two-dice">Dice pool</label>
+              <button
+                class="open-ended-toggle"
+                type="button"
+                data-role="right-open-ended"
+                aria-label="Open-Ended Player 2 dice"
+                aria-pressed="false"
+              >Open-Ended</button>
+            </div>
+            <div class="pool-entry">
+              <div class="shade-picker" id="player-two-shade-picker" data-shade="black">
+                <select class="shade-select" id="player-two-shade" data-role="right-shade" data-shade="black" aria-label="Player 2 dice shade">
+                  <option value="black" selected>B</option>
+                  <option value="grey">G</option>
+                  <option value="white">W</option>
+                </select>
+              </div>
+              <input
+                class="number-input"
+                id="player-two-dice"
+                data-role="right-dice"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                max="50"
+                step="1"
+                value="3"
+              >
+            </div>
+            <div class="slider-wrap">
+              <span class="slider-limit" aria-hidden="true">1</span>
+              <input
+                id="player-two-slider"
+                data-role="right-slider"
+                type="range"
+                min="1"
+                max="10"
+                step="1"
+                value="3"
+                aria-label="Player 2 dice pool, quick range from 1 to 10"
+              >
+              <span class="slider-limit" aria-hidden="true">10</span>
+            </div>
+          </fieldset>
+        </section>
+
+        <section class="results" aria-labelledby="results-title">
+          <div class="results-heading">
+            <h2 id="results-title">Exact Player 1 Odds</h2>
+          </div>
+
+          <figure class="probability-figure">
+            <div class="result-bar" id="result-bar" data-role="result-bar" role="img" aria-label="">
+              <div class="bar-segment bar-win" id="bar-win" data-role="bar-win"></div>
+              <div class="bar-segment bar-tie" id="bar-tie" data-role="bar-tie"></div>
+              <div class="bar-segment bar-lose" id="bar-lose" data-role="bar-lose"></div>
+            </div>
+
+            <div class="result-labels" id="result-labels" data-role="result-labels">
+              <div class="outcome outcome-win" id="label-win" data-role="label-win">
+                <span class="outcome-name">Win</span>
+                <strong class="outcome-value" id="value-win" data-role="value-win">18.8%</strong>
+              </div>
+              <div class="outcome outcome-tie" id="label-tie" data-role="label-tie">
+                <span class="outcome-name">Tie</span>
+                <strong class="outcome-value" id="value-tie" data-role="value-tie">31.3%</strong>
+              </div>
+              <div class="outcome outcome-lose" id="label-lose" data-role="label-lose">
+                <span class="outcome-name">Lose</span>
+                <strong class="outcome-value" id="value-lose" data-role="value-lose">50.0%</strong>
+              </div>
+            </div>
+          </figure>
+
+          <details class="math-details">
+            <summary>
+              <span class="math-summary-show">Show the Math</span>
+              <span class="math-summary-hide">Hide the Math</span>
+            </summary>
+            <div class="math-content" id="math-content" data-role="math-content"></div>
+          </details>
+
+          <p class="screen-reader-status" id="live-results" data-role="live-results" aria-live="polite"></p>
+        </section>
+        </section>
+
+        <hr class="test-divider">
+
+        <section
+          class="test-case calculator-instance"
+          id="skilled-calculator"
+          data-mode="skilled"
+          aria-labelledby="skilled-case-title"
+        >
+          
+          <section class="players" aria-label="Skilled and unskilled dice pools">
+            <fieldset class="player-one">
+              <legend>Skilled Player dice pool</legend>
+              <div class="player-heading">
+                <p class="pool-name">Skilled Player</p>
+              </div>
+              <div class="pool-label-row">
+                <label class="pool-input-label" for="skilled-dice">Dice pool</label>
+                <button
+                  class="open-ended-toggle"
+                  type="button"
+                  data-role="left-open-ended"
+                  aria-label="Open-Ended Skilled Player dice"
+                  aria-pressed="false"
+                >Open-Ended</button>
+              </div>
+              <div class="pool-entry">
+                <div class="shade-picker" id="skilled-shade-picker" data-shade="black">
+                  <select class="shade-select" id="skilled-shade" data-role="left-shade" data-shade="black" aria-label="Skilled Player dice shade">
+                    <option value="black" selected>B</option>
+                    <option value="grey">G</option>
+                    <option value="white">W</option>
+                  </select>
+                </div>
+                <input
+                  class="number-input"
+                  id="skilled-dice"
+                  data-role="left-dice"
+                  type="number"
+                  inputmode="numeric"
+                  min="1"
+                  max="50"
+                  step="1"
+                  value="2"
+                >
+              </div>
+              <div class="slider-wrap">
+                <span class="slider-limit" aria-hidden="true">1</span>
+                <input
+                  id="skilled-slider"
+                  data-role="left-slider"
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="1"
+                  value="2"
+                  aria-label="Skilled Player dice pool, quick range from 1 to 10"
+                >
+                <span class="slider-limit" aria-hidden="true">10</span>
+              </div>
+            </fieldset>
+
+            <div class="versus-column">
+              <div class="versus-token" aria-hidden="true">VS</div>
+              <section class="defender-control" id="skilled-defender-control" data-role="defender-control" data-defender="none" aria-labelledby="skilled-defender-label">
+                <label class="defender-label" id="skilled-defender-label" for="skilled-defender-slider">Defender</label>
+                <input
+                  id="skilled-defender-slider"
+                  data-role="defender-slider"
+                  type="range"
+                  min="-1"
+                  max="1"
+                  step="1"
+                  value="0"
+                  aria-valuetext="No defender"
+                >
+                <div class="defender-options" aria-hidden="true">
+                  <span data-option="player-one">Skilled</span>
+                  <span data-option="none">None</span>
+                  <span data-option="player-two">Unskilled</span>
+                </div>
+              </section>
+            </div>
+
+            <fieldset class="player-two">
+              <legend>Unskilled Player dice pool</legend>
+              <div class="player-heading">
+                <p class="pool-name">Unskilled Player</p>
+              </div>
+              <div class="pool-label-row">
+                <label class="pool-input-label" for="unskilled-dice">Dice pool</label>
+                <button
+                  class="open-ended-toggle"
+                  type="button"
+                  data-role="right-open-ended"
+                  aria-label="Open-Ended Unskilled Player dice"
+                  aria-pressed="false"
+                >Open-Ended</button>
+              </div>
+              <div class="pool-entry">
+                <div class="shade-picker" id="unskilled-shade-picker" data-shade="black">
+                  <select class="shade-select" id="unskilled-shade" data-role="right-shade" data-shade="black" aria-label="Unskilled Player dice shade">
+                    <option value="black" selected>B</option>
+                    <option value="grey">G</option>
+                    <option value="white">W</option>
+                  </select>
+                </div>
+                <input
+                  class="number-input"
+                  id="unskilled-dice"
+                  data-role="right-dice"
+                  type="number"
+                  inputmode="numeric"
+                  min="1"
+                  max="50"
+                  step="1"
+                  value="3"
+                >
+              </div>
+              <div class="slider-wrap">
+                <span class="slider-limit" aria-hidden="true">1</span>
+                <input
+                  id="unskilled-slider"
+                  data-role="right-slider"
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="1"
+                  value="3"
+                  aria-label="Unskilled Player dice pool, quick range from 1 to 10"
+                >
+                <span class="slider-limit" aria-hidden="true">10</span>
+              </div>
+            </fieldset>
+          </section>
+
+          <section class="results" aria-labelledby="skilled-results-title">
+            <div class="results-heading">
+              <h2 id="skilled-results-title">Exact Skilled Player Odds</h2>
+            </div>
+
+            <figure class="probability-figure">
+              <div class="result-bar" id="skilled-result-bar" data-role="result-bar" role="img" aria-label="">
+                <div class="bar-segment bar-win" data-role="bar-win"></div>
+                <div class="bar-segment bar-tie" data-role="bar-tie"></div>
+                <div class="bar-segment bar-lose" data-role="bar-lose"></div>
+              </div>
+
+              <div class="result-labels" id="skilled-result-labels" data-role="result-labels">
+                <div class="outcome outcome-win" data-role="label-win">
+                  <span class="outcome-name">Win</span>
+                  <strong class="outcome-value" data-role="value-win">50.0%</strong>
+                </div>
+                <div class="outcome outcome-tie" data-role="label-tie">
+                  <span class="outcome-name">Tie</span>
+                  <strong class="outcome-value" data-role="value-tie">37.5%</strong>
+                </div>
+                <div class="outcome outcome-lose" data-role="label-lose">
+                  <span class="outcome-name">Lose</span>
+                  <strong class="outcome-value" data-role="value-lose">12.5%</strong>
+                </div>
+              </div>
+            </figure>
+
+            <details class="math-details">
+              <summary>
+                <span class="math-summary-show">Show the Math</span>
+                <span class="math-summary-hide">Hide the Math</span>
+              </summary>
+              <div class="math-content" id="skilled-math-content" data-role="math-content"></div>
+            </details>
+
+            <p class="screen-reader-status" id="skilled-live-results" data-role="live-results" aria-live="polite"></p>
+          </section>
+        </section>
+        <div class="intro-notes">
+          <p>Webapp created by <a href="https://github.com/RaulJCosta" target="_blank" rel="noreferrer">Raul Costa</a>.</p>
+        </div>
+      </main>
+    </article>
+  </div>
+
+  <script>
+    "use strict";
+
+    // BEGIN PROBABILITY ENGINE
+    // Dice rules remain data, separate from the distribution and comparison
+    // functions. Multiplicity is the number of d6 faces producing an outcome.
+    function createShade(key, letter, label, targetNumber, failureFaces, successFaces) {
+      return Object.freeze({
+        key,
+        letter,
+        label,
+        targetNumber,
+        failureFaces,
+        successFaces,
+        dieOutcomes: Object.freeze([
+          Object.freeze({ successes: 0, multiplicity: BigInt(failureFaces) }),
+          Object.freeze({ successes: 1, multiplicity: BigInt(successFaces) })
+        ])
+      });
+    }
+
+    const DIE_SHADES = Object.freeze({
+      black: createShade("black", "B", "Black", 4, 3, 3),
+      grey: createShade("grey", "G", "Grey", 3, 2, 4),
+      white: createShade("white", "W", "White", 2, 1, 5)
+    });
+
+    const OPEN_ENDED_MAX_DICE_PER_TEST = 100;
+    const OPEN_ENDED_MAX_ERROR = 0.0001;
+
+    function cappedTailRisk(totalRolls, diceCount) {
+      const perDieRisk = 6 ** -totalRolls;
+      return -Math.expm1(diceCount * Math.log1p(-perDieRisk));
+    }
+
+    function calculateOpenEndedRollLimit(maximumDice, maximumError) {
+      let totalRolls = 1;
+
+      while (cappedTailRisk(totalRolls, maximumDice) >= maximumError) {
+        totalRolls += 1;
+      }
+
+      return totalRolls;
+    }
+
+    const OPEN_ENDED_TOTAL_ROLLS = calculateOpenEndedRollLimit(
+      OPEN_ENDED_MAX_DICE_PER_TEST,
+      OPEN_ENDED_MAX_ERROR
+    );
+    const OPEN_ENDED_REROLL_CAP = OPEN_ENDED_TOTAL_ROLLS - 1;
+
+    function createOpenEndedShade(shade) {
+      const outcomes = [];
+      const failureFaces = BigInt(shade.failureFaces);
+      const ordinarySuccessFaces = BigInt(shade.successFaces - 1);
+
+      outcomes.push(
+        Object.freeze({
+          successes: 0,
+          multiplicity:
+            failureFaces * 6n ** BigInt(OPEN_ENDED_TOTAL_ROLLS - 1)
+        })
+      );
+
+      for (
+        let successes = 1;
+        successes < OPEN_ENDED_TOTAL_ROLLS;
+        successes += 1
+      ) {
+        const ordinarySuccessWeight =
+          ordinarySuccessFaces *
+          6n ** BigInt(OPEN_ENDED_TOTAL_ROLLS - successes);
+        const failureWeight =
+          failureFaces *
+          6n ** BigInt(OPEN_ENDED_TOTAL_ROLLS - successes - 1);
+
+        outcomes.push(
+          Object.freeze({
+            successes,
+            multiplicity: ordinarySuccessWeight + failureWeight
+          })
+        );
+      }
+
+      // An all-six chain reaches the cap. Its entire remaining tail is grouped
+      // into the maximum success total, keeping integer combinatorics exact.
+      outcomes.push(
+        Object.freeze({
+          successes: OPEN_ENDED_TOTAL_ROLLS,
+          multiplicity: BigInt(shade.successFaces)
+        })
+      );
+
+      return Object.freeze({
+        ...shade,
+        key: `${shade.key}-open-ended`,
+        openEnded: true,
+        totalRolls: OPEN_ENDED_TOTAL_ROLLS,
+        rerollCap: OPEN_ENDED_REROLL_CAP,
+        dieOutcomes: Object.freeze(outcomes)
+      });
+    }
+
+    const OPEN_ENDED_SHADES = Object.freeze({
+      black: createOpenEndedShade(DIE_SHADES.black),
+      grey: createOpenEndedShade(DIE_SHADES.grey),
+      white: createOpenEndedShade(DIE_SHADES.white)
+    });
+
+    function openEndedErrorBound(openEndedDiceCount) {
+      const outcomesPerDie = 6n ** BigInt(OPEN_ENDED_TOTAL_ROLLS);
+      const denominator = outcomesPerDie ** BigInt(openEndedDiceCount);
+      const safelyResolved =
+        (outcomesPerDie - 1n) ** BigInt(openEndedDiceCount);
+
+      return {
+        numerator: denominator - safelyResolved,
+        denominator
+      };
+    }
+
+    function buildPoolDistribution(diceCount, ruleset = DIE_SHADES.black) {
+      const outcomes = ruleset.dieOutcomes;
+      const totalWeightPerDie = outcomes.reduce(
+        (sum, outcome) => sum + outcome.multiplicity,
+        0n
+      );
+      const highestSuccessValue = Math.max(
+        ...outcomes.map((outcome) => outcome.successes)
+      );
+
+      let counts = [1n];
+
+      for (let die = 0; die < diceCount; die += 1) {
+        const next = Array(counts.length + highestSuccessValue).fill(0n);
+
+        for (let currentSuccesses = 0; currentSuccesses < counts.length; currentSuccesses += 1) {
+          for (const outcome of outcomes) {
+            next[currentSuccesses + outcome.successes] +=
+              counts[currentSuccesses] * outcome.multiplicity;
+          }
+        }
+
+        counts = next;
+      }
+
+      return {
+        counts,
+        totalOutcomes: totalWeightPerDie ** BigInt(diceCount)
+      };
+    }
+
+    function remapPoolDistribution(pool, mapSuccesses) {
+      const counts = [];
+
+      pool.counts.forEach((count, successes) => {
+        const mappedSuccesses = mapSuccesses(successes);
+
+        if (!Number.isInteger(mappedSuccesses) || mappedSuccesses < 0) {
+          throw new RangeError("Mapped success totals must be non-negative integers.");
+        }
+
+        while (counts.length <= mappedSuccesses) counts.push(0n);
+        counts[mappedSuccesses] += count;
+      });
+
+      return {
+        counts,
+        totalOutcomes: pool.totalOutcomes
+      };
+    }
+
+    function halveSuccessesAndFloor(pool) {
+      return remapPoolDistribution(
+        pool,
+        (successes) => Math.floor(successes / 2)
+      );
+    }
+
+    function comparePoolDistributions(playerOne, playerTwo) {
+      let playerTwoLower = 0n;
+      let win = 0n;
+      let tie = 0n;
+
+      for (let successes = 0; successes < playerOne.counts.length; successes += 1) {
+        const playerOneCount = playerOne.counts[successes];
+        const matchingPlayerTwoCount = playerTwo.counts[successes] ?? 0n;
+
+        win += playerOneCount * playerTwoLower;
+        tie += playerOneCount * matchingPlayerTwoCount;
+        playerTwoLower += matchingPlayerTwoCount;
+      }
+
+      const total = playerOne.totalOutcomes * playerTwo.totalOutcomes;
+      const lose = total - win - tie;
+
+      return { win, tie, lose, total };
+    }
+
+    function resolveDefenderTies(result, defender) {
+      if (defender === "player-one") {
+        return {
+          win: result.win + result.tie,
+          tie: 0n,
+          lose: result.lose,
+          total: result.total
+        };
+      }
+
+      if (defender === "player-two") {
+        return {
+          win: result.win,
+          tie: 0n,
+          lose: result.lose + result.tie,
+          total: result.total
+        };
+      }
+
+      return result;
+    }
+
+    function formatPercent(numerator, denominator) {
+      const tenthsOfAPercent =
+        (numerator * 1000n + denominator / 2n) / denominator;
+      const whole = tenthsOfAPercent / 10n;
+      const decimal = tenthsOfAPercent % 10n;
+      return `${whole}.${decimal}%`;
+    }
+
+    function ratiosToUnits(result, scale = 1000000n) {
+      const win = (result.win * scale) / result.total;
+      const tie = (result.tie * scale) / result.total;
+      const lose = scale - win - tie;
+      return {
+        win: Number(win),
+        tie: Number(tie),
+        lose: Number(lose),
+        scale: Number(scale)
+      };
+    }
+    // END PROBABILITY ENGINE
+
+    const MAX_TYPED_DICE = 50;
+    const DEFENDER_BY_POSITION = Object.freeze({
+      "-1": "player-one",
+      "0": "none",
+      "1": "player-two"
+    });
+
+    const CALCULATOR_CONFIGS = Object.freeze([
+      Object.freeze({
+        rootSelector: "#standard-calculator",
+        mode: "standard",
+        leftName: "Player 1",
+        rightName: "Player 2",
+        leftSymbol: "1",
+        rightSymbol: "2"
+      }),
+      Object.freeze({
+        rootSelector: "#skilled-calculator",
+        mode: "skilled",
+        leftName: "Skilled Player",
+        rightName: "Unskilled Player",
+        leftSymbol: "S",
+        rightSymbol: "U"
+      })
+    ]);
+
+    function requiredElement(root, role) {
+      const element = root.querySelector(`[data-role="${role}"]`);
+      if (!element) throw new Error(`Missing calculator element: ${role}`);
+      return element;
+    }
+
+    function collectElements(root) {
+      const leftShade = requiredElement(root, "left-shade");
+      const rightShade = requiredElement(root, "right-shade");
+
+      return {
+        leftInput: requiredElement(root, "left-dice"),
+        rightInput: requiredElement(root, "right-dice"),
+        leftSlider: requiredElement(root, "left-slider"),
+        rightSlider: requiredElement(root, "right-slider"),
+        leftOpenEnded: requiredElement(root, "left-open-ended"),
+        rightOpenEnded: requiredElement(root, "right-open-ended"),
+        leftShade,
+        rightShade,
+        leftShadePicker: leftShade.closest(".shade-picker"),
+        rightShadePicker: rightShade.closest(".shade-picker"),
+        defenderControl: requiredElement(root, "defender-control"),
+        defenderSlider: requiredElement(root, "defender-slider"),
+        bar: requiredElement(root, "result-bar"),
+        barWin: requiredElement(root, "bar-win"),
+        barTie: requiredElement(root, "bar-tie"),
+        barLose: requiredElement(root, "bar-lose"),
+        labels: requiredElement(root, "result-labels"),
+        labelWin: requiredElement(root, "label-win"),
+        labelTie: requiredElement(root, "label-tie"),
+        labelLose: requiredElement(root, "label-lose"),
+        valueWin: requiredElement(root, "value-win"),
+        valueTie: requiredElement(root, "value-tie"),
+        valueLose: requiredElement(root, "value-lose"),
+        mathContent: requiredElement(root, "math-content"),
+        liveResults: requiredElement(root, "live-results")
+      };
+    }
+
+    function updateSliderAppearance(slider) {
+      const minimum = Number(slider.min);
+      const maximum = Number(slider.max);
+      const current = Number(slider.value);
+      const fill = ((current - minimum) / (maximum - minimum)) * 100;
+      slider.style.setProperty("--fill", `${fill}%`);
+    }
+
+    function placeOutcomeLabels(calculator) {
+      const { state, elements } = calculator;
+      if (!state.strictUnits || !state.resolvedUnits) return;
+
+      const availableWidth = elements.labels.clientWidth;
+      if (availableWidth <= 0) return;
+
+      let entries;
+
+      if (state.defender === "none") {
+        const { win, tie, lose } = state.strictUnits;
+        entries = [
+          { label: elements.labelWin, start: 0, size: win },
+          { label: elements.labelTie, start: win, size: tie },
+          { label: elements.labelLose, start: win + tie, size: lose }
+        ];
+      } else {
+        const { win, lose } = state.resolvedUnits;
+        entries = [
+          { label: elements.labelWin, start: 0, size: win },
+          { label: elements.labelLose, start: win, size: lose }
+        ];
+      }
+
+      const labels = entries.map((entry) => entry.label);
+      const widths = labels.map((label) => label.offsetWidth);
+      const scale = state.strictUnits.scale;
+      const preferredCenters = entries.map((entry) =>
+        availableWidth * ((entry.start + entry.size / 2) / scale)
+      );
+      const gap = availableWidth < 420 ? 6 : 12;
+      const left = preferredCenters.map((center, index) =>
+        Math.max(
+          0,
+          Math.min(
+            availableWidth - widths[index],
+            center - widths[index] / 2
+          )
+        )
+      );
+
+      for (let index = 1; index < left.length; index += 1) {
+        left[index] = Math.max(
+          left[index],
+          left[index - 1] + widths[index - 1] + gap
+        );
+      }
+
+      const lastIndex = left.length - 1;
+      left[lastIndex] = Math.min(
+        left[lastIndex],
+        availableWidth - widths[lastIndex]
+      );
+
+      for (let index = lastIndex - 1; index >= 0; index -= 1) {
+        left[index] = Math.min(
+          left[index],
+          left[index + 1] - widths[index] - gap
+        );
+      }
+
+      if (left[0] < 0) {
+        left[0] = 0;
+        for (let index = 1; index < left.length; index += 1) {
+          left[index] = Math.max(
+            left[index],
+            left[index - 1] + widths[index - 1] + gap
+          );
+        }
+      }
+
+      labels.forEach((label, index) => {
+        label.style.left = `${Math.round(left[index])}px`;
+      });
+    }
+
+    function greatestCommonDivisor(first, second) {
+      let a = first < 0n ? -first : first;
+      let b = second < 0n ? -second : second;
+
+      while (b !== 0n) {
+        const remainder = a % b;
+        a = b;
+        b = remainder;
+      }
+
+      return a;
+    }
+
+    function formatInteger(value) {
+      return value.toLocaleString("en-US");
+    }
+
+    function fractionCalculation(numerator, denominator) {
+      const divisor = greatestCommonDivisor(numerator, denominator);
+      const reducedNumerator = numerator / divisor;
+      const reducedDenominator = denominator / divisor;
+      const exact = `${formatInteger(numerator)} / ${formatInteger(denominator)}`;
+      const reduced =
+        divisor === 1n
+          ? ""
+          : ` = ${formatInteger(reducedNumerator)} / ${formatInteger(reducedDenominator)}`;
+      return `${exact}${reduced}`;
+    }
+
+    function faceFraction(faceCount) {
+      return fractionCalculation(BigInt(faceCount), 6n);
+    }
+
+    function formatDetailedPercent(numerator, denominator, digits = 6) {
+      const decimalScale = 10n ** BigInt(digits);
+      const units =
+        (numerator * 100n * decimalScale + denominator / 2n) / denominator;
+      const whole = units / decimalScale;
+      const decimal = String(units % decimalScale).padStart(digits, "0");
+      return `${whole}.${decimal}%`;
+    }
+
+    function poolMathCard(symbol, name, diceCount, shade, pool, cardClass) {
+      const counts =
+        diceCount <= 12
+          ? `For <i>k</i> = 0, 1, …, ${diceCount}, the exact outcome counts are
+             [${pool.counts.map(formatInteger).join(", ")}].
+             Their sum is ${formatInteger(pool.totalOutcomes)} = 6<sup>${diceCount}</sup>.`
+          : `The formula is evaluated for all ${diceCount + 1} possible totals,
+             from <i>k</i> = 0 to ${diceCount}; together they account for
+             ${formatInteger(pool.totalOutcomes)} = 6<sup>${diceCount}</sup> rolls.`;
+
+      return `
+        <section class="math-card ${cardClass}">
+          <h3>${name} · ${shade.label} dice</h3>
+          <p class="math-equation">
+            One die succeeds on ${shade.targetNumber}–6, so
+            <i>p</i> = ${faceFraction(shade.successFaces)};
+            it fails on the other faces, so
+            <i>q</i> = ${faceFraction(shade.failureFaces)}.
+          </p>
+          <p class="math-equation">
+            For exactly <i>k</i> successes:
+            P<sub>${symbol}</sub>(<i>k</i>) =
+            C(${diceCount}, <i>k</i>) ×
+            (${shade.successFaces}/6)<sup><i>k</i></sup> ×
+            (${shade.failureFaces}/6)<sup>${diceCount}−<i>k</i></sup>
+          </p>
+          <p class="math-counts">${counts}</p>
+        </section>
+      `;
+    }
+
+    function openEndedPoolMathCard(
+      symbol,
+      name,
+      diceCount,
+      shade,
+      pool,
+      cardClass
+    ) {
+      const maximumSuccesses = pool.counts.length - 1;
+      const counts =
+        pool.counts.length <= 25
+          ? `After combining the dice, the exact capped counts for
+             <i>k</i> = 0, 1, …, ${maximumSuccesses} are
+             [${pool.counts.map(formatInteger).join(", ")}].`
+          : `Combining the dice produces ${pool.counts.length} possible capped
+             totals, from <i>k</i> = 0 through ${maximumSuccesses}.`;
+
+      return `
+        <section class="math-card ${cardClass}">
+          <h3>${name} · ${shade.label} open-ended dice</h3>
+          <p class="math-equation">
+            A ${shade.targetNumber}–5 gives one success and stops. A 6 gives one
+            success and another roll; a 1–${shade.targetNumber - 1} stops with no
+            new success.
+          </p>
+          <p class="math-equation">
+            For one die, with <i>s</i> = ${shade.successFaces} success faces:
+            P(<i>X</i> = 0) = ${shade.failureFaces}/6;<br>
+            P(<i>X</i> = <i>k</i>) =
+            (5<i>s</i>/36)(1/6)<sup><i>k</i>−1</sup>
+            for 1 ≤ <i>k</i> &lt; ${OPEN_ENDED_TOTAL_ROLLS};<br>
+            P(<i>X</i> = ${OPEN_ENDED_TOTAL_ROLLS}) =
+            <i>s</i>/6<sup>${OPEN_ENDED_TOTAL_ROLLS}</sup>
+            after grouping the remaining tail at the cap.
+          </p>
+          <p class="math-counts">
+            The pool distribution P<sub>${symbol}</sub> is the exact
+            ${diceCount}-fold convolution of that one-die distribution. ${counts}
+            Its integer weights sum to
+            6<sup>${OPEN_ENDED_TOTAL_ROLLS * diceCount}</sup>.
+          </p>
+        </section>
+      `;
+    }
+
+    function distributionsMarkup(calculator, leftPool, rightPool, leftShade, rightShade) {
+      const { config, state } = calculator;
+      const hasOpenEndedDice =
+        state.leftOpenEnded || state.rightOpenEnded;
+      const guide = hasOpenEndedDice
+        ? `
+          <ul class="math-guide">
+            <li>
+              <strong>Ordinary result</strong>
+              A non-6 succeeds or fails normally, then that die stops.
+            </li>
+            <li>
+              <strong>Exploding 6</strong>
+              A 6 adds one success and lets the same die roll again.
+            </li>
+            <li>
+              <strong>Convolution</strong>
+              Combine every one-die total to build the complete pool distribution.
+            </li>
+          </ul>
+        `
+        : `
+          <ul class="math-guide">
+            <li>
+              <strong>C(<i>n</i>, <i>k</i>)</strong>
+              chooses which <i>k</i> of the <i>n</i> dice succeed.
+            </li>
+            <li>
+              <strong>(<i>s</i>/6)<sup><i>k</i></sup></strong>
+              is the chance that those <i>k</i> dice land on success faces.
+            </li>
+            <li>
+              <strong>(<i>f</i>/6)<sup><i>n</i>−<i>k</i></sup></strong>
+              is the chance that every remaining die fails.
+            </li>
+          </ul>
+        `;
+      const leftCard = state.leftOpenEnded
+        ? openEndedPoolMathCard(
+            config.leftSymbol,
+            config.leftName,
+            state.leftDice,
+            leftShade,
+            leftPool,
+            "math-card-player-one"
+          )
+        : poolMathCard(
+            config.leftSymbol,
+            config.leftName,
+            state.leftDice,
+            leftShade,
+            leftPool,
+            "math-card-player-one"
+          );
+      const rightCard = state.rightOpenEnded
+        ? openEndedPoolMathCard(
+            config.rightSymbol,
+            config.rightName,
+            state.rightDice,
+            rightShade,
+            rightPool,
+            "math-card-player-two"
+          )
+        : poolMathCard(
+            config.rightSymbol,
+            config.rightName,
+            state.rightDice,
+            rightShade,
+            rightPool,
+            "math-card-player-two"
+          );
+
+      return `
+        <section>
+          <div class="math-step-heading">
+            <span class="math-step-number">1</span>
+            <div>
+              <h3>Build each pool's distribution</h3>
+              <p class="math-intro">
+                Let <i>k</i> be the number of successes. Count every way each pool can
+                produce each possible value of <i>k</i>.
+              </p>
+            </div>
+          </div>
+          ${guide}
+          <div class="math-pools">
+            ${leftCard}
+            ${rightCard}
+          </div>
+        </section>
+      `;
+    }
+
+    function openEndedErrorMarkup(calculator) {
+      const { state } = calculator;
+      const openEndedDiceCount =
+        (state.leftOpenEnded ? state.leftDice : 0) +
+        (state.rightOpenEnded ? state.rightDice : 0);
+
+      if (openEndedDiceCount === 0) return "";
+
+      const bound = openEndedErrorBound(openEndedDiceCount);
+      const dieWord = openEndedDiceCount === 1 ? "die" : "dice";
+
+      return `
+        <aside class="math-error-note">
+          <strong>Open-ended tail bound.</strong>
+          Each die may make ${OPEN_ENDED_REROLL_CAP} rerolls after its original
+          roll. Only a chain of ${OPEN_ENDED_TOTAL_ROLLS} consecutive sixes
+          reaches the cap; any later successes are grouped into the
+          ${OPEN_ENDED_TOTAL_ROLLS}th success. With ${openEndedDiceCount}
+          open-ended ${dieWord} in this test, the chance that any chain reaches
+          that tail is
+          1 − (1 − 1/6<sup>${OPEN_ENDED_TOTAL_ROLLS}</sup>)<sup>${openEndedDiceCount}</sup>
+          = <strong>${formatDetailedPercent(
+            bound.numerator,
+            bound.denominator
+          )}</strong>.
+          No Win, Tie, or Lose probability can differ from the unlimited rule
+          by more than that amount; the configured maximum is 0.01%.
+        </aside>
+      `;
+    }
+
+    function resultMathRow(
+      label,
+      className,
+      explanation,
+      expression,
+      numerator,
+      result,
+      compact = false
+    ) {
+      const exactFraction = compact
+        ? ""
+        : `${fractionCalculation(numerator, result.total)} =`;
+
+      return `
+        <div class="math-result">
+          <span class="math-result-name ${className}">${label}</span>
+          <div>
+            <p class="math-result-explanation">${explanation}</p>
+            <p class="math-equation">
+              ${expression} =
+              ${exactFraction}
+              <strong>${formatPercent(numerator, result.total)}</strong>
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    function comparisonRows(
+      calculator,
+      leftPool,
+      rightPool,
+      strictResult,
+      rightSymbol
+    ) {
+      const { config, state } = calculator;
+      const maximumLeftSuccesses = leftPool.counts.length - 1;
+      const maximumSharedSuccesses = Math.min(
+        maximumLeftSuccesses,
+        rightPool.counts.length - 1
+      );
+      const compact =
+        state.leftOpenEnded || state.rightOpenEnded;
+
+      return `
+        ${resultMathRow(
+          "Win",
+          "math-result-win",
+          `For each ${config.leftName} total <i>k</i>, count every ${config.rightName} comparison total below it.`,
+          `Σ<sub>k=1</sub><sup>${maximumLeftSuccesses}</sup>
+           P<sub>${config.leftSymbol}</sub>(k) ×
+           Σ<sub>j=0</sub><sup>k−1</sup>P<sub>${rightSymbol}</sub>(j)`,
+          strictResult.win,
+          strictResult,
+          compact
+        )}
+        ${resultMathRow(
+          "Tie",
+          "math-result-tie",
+          "Match rolls whose two comparison totals are exactly equal.",
+          `Σ<sub>k=0</sub><sup>${maximumSharedSuccesses}</sup>
+          P<sub>${config.leftSymbol}</sub>(k)P<sub>${rightSymbol}</sub>(k)`,
+          strictResult.tie,
+          strictResult,
+          compact
+        )}
+        ${resultMathRow(
+          "Lose",
+          "math-result-lose",
+          `Everything left has ${config.rightName}'s comparison total above ${config.leftName}'s total.`,
+          "1 − Win − Tie",
+          strictResult.lose,
+          strictResult,
+          compact
+        )}
+      `;
+    }
+
+    function pairedRollsMarkup(calculator, strictResult) {
+      const { state } = calculator;
+
+      if (state.leftOpenEnded || state.rightOpenEnded) {
+        const leftExponent =
+          state.leftDice *
+          (state.leftOpenEnded ? OPEN_ENDED_TOTAL_ROLLS : 1);
+        const rightExponent =
+          state.rightDice *
+          (state.rightOpenEnded ? OPEN_ENDED_TOTAL_ROLLS : 1);
+
+        return `
+          <p class="math-total">
+            Total weighted paired outcomes =
+            6<sup>${leftExponent}</sup> ×
+            6<sup>${rightExponent}</sup> =
+            6<sup>${leftExponent + rightExponent}</sup>.
+            The exact integer arithmetic is retained internally.
+          </p>
+        `;
+      }
+
+      return `
+        <p class="math-total">
+          Total paired rolls =
+          6<sup>${state.leftDice}</sup> ×
+          6<sup>${state.rightDice}</sup> =
+          6<sup>${state.leftDice + state.rightDice}</sup> =
+          <strong>${formatInteger(strictResult.total)}</strong>.
+        </p>
+      `;
+    }
+
+    function renderStandardMath(
+      calculator,
+      leftPool,
+      rightPool,
+      strictResult,
+      leftShade,
+      rightShade
+    ) {
+      const { config, elements } = calculator;
+      elements.mathContent.innerHTML = `
+        ${distributionsMarkup(
+          calculator,
+          leftPool,
+          rightPool,
+          leftShade,
+          rightShade
+        )}
+        <section class="math-comparison">
+          <div class="math-step-heading">
+            <span class="math-step-number">2</span>
+            <div>
+              <h3>Compare the two success totals</h3>
+              <p class="math-intro">
+                Pair every possible ${config.leftName} roll with every possible
+                ${config.rightName} roll.
+              </p>
+            </div>
+          </div>
+          ${pairedRollsMarkup(calculator, strictResult)}
+          ${comparisonRows(
+            calculator,
+            leftPool,
+            rightPool,
+            strictResult,
+            config.rightSymbol
+          )}
+          ${openEndedErrorMarkup(calculator)}
+        </section>
+      `;
+    }
+
+    function skilledTransformMarkup(
+      calculator,
+      rawRightPool,
+      effectiveRightPool
+    ) {
+      const { config, state } = calculator;
+      const maximumRawSuccesses = rawRightPool.counts.length - 1;
+      const mappingLimit = Math.min(maximumRawSuccesses, 10);
+      const mapping = Array.from(
+        { length: mappingLimit + 1 },
+        (_, successes) => `${successes}→${Math.floor(successes / 2)}`
+      );
+
+      if (maximumRawSuccesses > mappingLimit) {
+        mapping.push(
+          "…",
+          `${maximumRawSuccesses}→${Math.floor(maximumRawSuccesses / 2)}`
+        );
+      }
+
+      const effectiveCounts =
+        effectiveRightPool.counts.length <= 13
+          ? `The resulting counts for <i>r</i> = 0, 1, …,
+             ${effectiveRightPool.counts.length - 1} are
+             [${effectiveRightPool.counts.map(formatInteger).join(", ")}].`
+          : `This groups the ${rawRightPool.counts.length} raw totals into
+             ${effectiveRightPool.counts.length} comparison totals.`;
+      const rightExponent =
+        state.rightDice *
+        (state.rightOpenEnded ? OPEN_ENDED_TOTAL_ROLLS : 1);
+      const totalOutcomes = state.rightOpenEnded
+        ? `6<sup>${rightExponent}</sup>`
+        : `${formatInteger(effectiveRightPool.totalOutcomes)} =
+           6<sup>${rightExponent}</sup>`;
+
+      return `
+        <div class="math-transform">
+          <h3>First, reduce the ${config.rightName}'s result</h3>
+          <p class="math-result-explanation">
+            A raw total of <i>k</i> successes becomes
+            <i>r</i> = ⌊<i>k</i>/2⌋. In other words:
+            <span class="math-mapping">${mapping.join(", ")}</span>.
+          </p>
+          <p class="math-equation">
+            P<sub>U*</sub>(<i>r</i>) =
+            P<sub>U</sub>(2<i>r</i>) +
+            P<sub>U</sub>(2<i>r</i> + 1)
+          </p>
+          <p class="math-counts">
+            Adjacent raw totals are added together. ${effectiveCounts}
+            The sum stays ${totalOutcomes}.
+          </p>
+        </div>
+      `;
+    }
+
+    function renderSkilledMath(
+      calculator,
+      leftPool,
+      rawRightPool,
+      effectiveRightPool,
+      strictResult,
+      leftShade,
+      rightShade
+    ) {
+      const { config, elements } = calculator;
+      elements.mathContent.innerHTML = `
+        ${distributionsMarkup(
+          calculator,
+          leftPool,
+          rawRightPool,
+          leftShade,
+          rightShade
+        )}
+        <section class="math-comparison">
+          <div class="math-step-heading">
+            <span class="math-step-number">2</span>
+            <div>
+              <h3>Halve the unskilled total, then compare</h3>
+              <p class="math-intro">
+                Adjust only the ${config.rightName}'s raw successes; the
+                ${config.leftName}'s total stays unchanged.
+              </p>
+            </div>
+          </div>
+          ${skilledTransformMarkup(
+            calculator,
+            rawRightPool,
+            effectiveRightPool
+          )}
+          <h3 class="math-subheading">Then compare the adjusted totals</h3>
+          ${pairedRollsMarkup(calculator, strictResult)}
+          ${comparisonRows(
+            calculator,
+            leftPool,
+            effectiveRightPool,
+            strictResult,
+            "U*"
+          )}
+          ${openEndedErrorMarkup(calculator)}
+        </section>
+      `;
+    }
+
+    function renderMath(
+      calculator,
+      leftPool,
+      rawRightPool,
+      comparisonRightPool,
+      strictResult,
+      leftShade,
+      rightShade
+    ) {
+      if (calculator.config.mode === "skilled") {
+        renderSkilledMath(
+          calculator,
+          leftPool,
+          rawRightPool,
+          comparisonRightPool,
+          strictResult,
+          leftShade,
+          rightShade
+        );
+        return;
+      }
+
+      renderStandardMath(
+        calculator,
+        leftPool,
+        rawRightPool,
+        strictResult,
+        leftShade,
+        rightShade
+      );
+    }
+
+    function renderCalculator(calculator) {
+      const { config, state, elements } = calculator;
+      const leftShade = DIE_SHADES[state.leftShade];
+      const rightShade = DIE_SHADES[state.rightShade];
+      const leftRuleset = state.leftOpenEnded
+        ? OPEN_ENDED_SHADES[state.leftShade]
+        : leftShade;
+      const rightRuleset = state.rightOpenEnded
+        ? OPEN_ENDED_SHADES[state.rightShade]
+        : rightShade;
+      const leftPool = buildPoolDistribution(state.leftDice, leftRuleset);
+      const rawRightPool = buildPoolDistribution(
+        state.rightDice,
+        rightRuleset
+      );
+      const comparisonRightPool =
+        config.mode === "skilled"
+          ? halveSuccessesAndFloor(rawRightPool)
+          : rawRightPool;
+      const strictResult = comparePoolDistributions(
+        leftPool,
+        comparisonRightPool
+      );
+      const resolvedResult = resolveDefenderTies(
+        strictResult,
+        state.defender
+      );
+      const strictUnits = ratiosToUnits(strictResult);
+      const resolvedUnits = ratiosToUnits(resolvedResult);
+      state.strictUnits = strictUnits;
+      state.resolvedUnits = resolvedUnits;
+
+      const strictFormatted = {
+        win: formatPercent(strictResult.win, strictResult.total),
+        tie: formatPercent(strictResult.tie, strictResult.total),
+        lose: formatPercent(strictResult.lose, strictResult.total)
+      };
+      const resolvedFormatted = {
+        win: formatPercent(resolvedResult.win, resolvedResult.total),
+        lose: formatPercent(resolvedResult.lose, resolvedResult.total)
+      };
+
+      elements.barWin.style.flexGrow = String(strictUnits.win);
+      elements.barTie.style.flexGrow = String(strictUnits.tie);
+      elements.barLose.style.flexGrow = String(strictUnits.lose);
+      elements.bar.dataset.defender = state.defender;
+      elements.defenderControl.dataset.defender = state.defender;
+      elements.labelTie.hidden = state.defender !== "none";
+      elements.valueWin.textContent = resolvedFormatted.win;
+      elements.valueTie.textContent = strictFormatted.tie;
+      elements.valueLose.textContent = resolvedFormatted.lose;
+
+      const leftPoolDescription =
+        `${config.leftName} with ${state.leftDice} ${leftShade.label.toLowerCase()} ` +
+        `${state.leftOpenEnded ? "open-ended " : ""}dice`;
+      const rightPoolDescription =
+        `${config.rightName} with ${state.rightDice} ${rightShade.label.toLowerCase()} ` +
+        `${state.rightOpenEnded ? "open-ended " : ""}dice`;
+      const adjustment =
+        config.mode === "skilled"
+          ? " The unskilled success total is halved and rounded down before comparison."
+          : "";
+
+      let summary;
+      if (state.defender === "none") {
+        summary =
+          `${leftPoolDescription} versus ${rightPoolDescription}: ` +
+          `${strictFormatted.win} win, ${strictFormatted.tie} tie, ` +
+          `${strictFormatted.lose} lose.${adjustment}`;
+      } else {
+        const defenderName =
+          state.defender === "player-one"
+            ? config.leftName
+            : config.rightName;
+        summary =
+          `${defenderName} defends. ${leftPoolDescription} versus ` +
+          `${rightPoolDescription}: ${resolvedFormatted.win} win, ` +
+          `${resolvedFormatted.lose} lose. Ties favor ${defenderName}.${adjustment}`;
+      }
+
+      elements.bar.setAttribute("aria-label", summary);
+      elements.liveResults.textContent = summary;
+      renderMath(
+        calculator,
+        leftPool,
+        rawRightPool,
+        comparisonRightPool,
+        strictResult,
+        leftShade,
+        rightShade
+      );
+
+      requestAnimationFrame(() => placeOutcomeLabels(calculator));
+    }
+
+    function scheduleRender(calculator) {
+      if (calculator.state.renderFrame !== null) {
+        cancelAnimationFrame(calculator.state.renderFrame);
+      }
+
+      calculator.state.renderFrame = requestAnimationFrame(() => {
+        calculator.state.renderFrame = null;
+        renderCalculator(calculator);
+      });
+    }
+
+    function connectPoolControls(calculator, side) {
+      const { state, elements } = calculator;
+      const stateKey = `${side}Dice`;
+      const input = elements[`${side}Input`];
+      const slider = elements[`${side}Slider`];
+
+      const restoreValidValue = () => {
+        input.value = String(state[stateKey]);
+        input.removeAttribute("aria-invalid");
+      };
+
+      const flashDiceLimit = () => {
+        input.classList.remove("limit-flash");
+        void input.offsetWidth;
+        input.classList.add("limit-flash");
+      };
+
+      input.addEventListener("animationend", () => {
+        input.classList.remove("limit-flash");
+      });
+
+      const commitClampedValue = () => {
+        if (input.value.trim() === "") {
+          restoreValidValue();
+          return;
+        }
+
+        const rawValue = Number(input.value);
+        if (!Number.isFinite(rawValue)) {
+          restoreValidValue();
+          return;
+        }
+
+        const value = Math.min(
+          MAX_TYPED_DICE,
+          Math.max(1, Math.round(rawValue))
+        );
+        const changed = state[stateKey] !== value;
+
+        state[stateKey] = value;
+        input.value = String(value);
+        input.removeAttribute("aria-invalid");
+        slider.value = String(Math.min(value, Number(slider.max)));
+        updateSliderAppearance(slider);
+
+        if (changed) scheduleRender(calculator);
+      };
+
+      input.addEventListener("input", () => {
+        const value = Number(input.value);
+
+        if (Number.isFinite(value) && value > MAX_TYPED_DICE) {
+          state[stateKey] = MAX_TYPED_DICE;
+          input.value = String(MAX_TYPED_DICE);
+          input.removeAttribute("aria-invalid");
+          slider.value = String(Number(slider.max));
+          updateSliderAppearance(slider);
+          flashDiceLimit();
+          scheduleRender(calculator);
+          return;
+        }
+
+        const isValid =
+          input.value !== "" &&
+          Number.isInteger(value) &&
+          value >= 1 &&
+          value <= MAX_TYPED_DICE;
+
+        if (!isValid) {
+          input.setAttribute("aria-invalid", "true");
+          return;
+        }
+
+        input.removeAttribute("aria-invalid");
+        state[stateKey] = value;
+        slider.value = String(Math.min(value, Number(slider.max)));
+        updateSliderAppearance(slider);
+        scheduleRender(calculator);
+      });
+
+      input.addEventListener("blur", () => {
+        if (input.getAttribute("aria-invalid") === "true") {
+          commitClampedValue();
+        }
+      });
+
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          commitClampedValue();
+          input.blur();
+        }
+      });
+
+      slider.addEventListener("input", () => {
+        const value = Number(slider.value);
+        state[stateKey] = value;
+        input.value = String(value);
+        input.removeAttribute("aria-invalid");
+        updateSliderAppearance(slider);
+        scheduleRender(calculator);
+      });
+
+      updateSliderAppearance(slider);
+    }
+
+    function connectShadeControl(calculator, side) {
+      const { state, elements } = calculator;
+      const stateKey = `${side}Shade`;
+      const select = elements[`${side}Shade`];
+      const picker = elements[`${side}ShadePicker`];
+
+      const updateAppearance = () => {
+        const shade = DIE_SHADES[select.value] ?? DIE_SHADES.black;
+        state[stateKey] = shade.key;
+        select.value = shade.key;
+        select.dataset.shade = shade.key;
+        picker.dataset.shade = shade.key;
+        select.title =
+          `${shade.label} dice: successes on ${shade.targetNumber}–6`;
+      };
+
+      select.addEventListener("change", () => {
+        updateAppearance();
+        scheduleRender(calculator);
+      });
+
+      updateAppearance();
+    }
+
+    function connectOpenEndedControl(calculator, side) {
+      const { state, elements } = calculator;
+      const stateKey = `${side}OpenEnded`;
+      const button = elements[`${side}OpenEnded`];
+
+      button.addEventListener("click", () => {
+        state[stateKey] = !state[stateKey];
+        button.setAttribute("aria-pressed", String(state[stateKey]));
+        scheduleRender(calculator);
+      });
+    }
+
+    function connectDefenderControl(calculator) {
+      const { config, state, elements } = calculator;
+
+      elements.defenderSlider.addEventListener("input", () => {
+        state.defender =
+          DEFENDER_BY_POSITION[elements.defenderSlider.value] ?? "none";
+        const label =
+          state.defender === "none"
+            ? "No defender"
+            : `${state.defender === "player-one" ? config.leftName : config.rightName} defends`;
+        elements.defenderSlider.setAttribute("aria-valuetext", label);
+        scheduleRender(calculator);
+      });
+    }
+
+    function createCalculator(config) {
+      const root = document.querySelector(config.rootSelector);
+      if (!root) throw new Error(`Missing calculator root: ${config.rootSelector}`);
+
+      const elements = collectElements(root);
+      const calculator = {
+        config,
+        elements,
+        state: {
+          leftDice: Number(elements.leftInput.value),
+          rightDice: Number(elements.rightInput.value),
+          leftShade: elements.leftShade.value,
+          rightShade: elements.rightShade.value,
+          leftOpenEnded: false,
+          rightOpenEnded: false,
+          defender: "none",
+          strictUnits: null,
+          resolvedUnits: null,
+          renderFrame: null
+        },
+        resizeObserver: null
+      };
+
+      connectPoolControls(calculator, "left");
+      connectPoolControls(calculator, "right");
+      connectShadeControl(calculator, "left");
+      connectShadeControl(calculator, "right");
+      connectOpenEndedControl(calculator, "left");
+      connectOpenEndedControl(calculator, "right");
+      connectDefenderControl(calculator);
+
+      if ("ResizeObserver" in window) {
+        calculator.resizeObserver = new ResizeObserver(() =>
+          placeOutcomeLabels(calculator)
+        );
+        calculator.resizeObserver.observe(elements.labels);
+      } else {
+        window.addEventListener(
+          "resize",
+          () => placeOutcomeLabels(calculator)
+        );
+      }
+
+      renderCalculator(calculator);
+      return calculator;
+    }
+
+    const calculators = CALCULATOR_CONFIGS.map(createCalculator);
+
+    window.BurningWheelVersus = Object.freeze({
+      buildPoolDistribution,
+      openEndedErrorBound,
+      remapPoolDistribution,
+      halveSuccessesAndFloor,
+      comparePoolDistributions,
+      resolveDefenderTies,
+      formatPercent,
+      diceShades: DIE_SHADES,
+      openEndedDiceShades: OPEN_ENDED_SHADES,
+      openEndedRerollCap: OPEN_ENDED_REROLL_CAP,
+      calculators
+    });
+  </script>
+</body>
+</html>
