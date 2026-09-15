@@ -569,6 +569,51 @@
       font-weight: 850;
     }
 
+    .roll-button {
+      width: min(100%, 9.5rem);
+      min-height: 2.65rem;
+      margin-top: 1rem;
+      padding: 0.55rem 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      color: #e2bf7d;
+      font-size: 0.875rem;
+      font-weight: 800;
+      line-height: 1.2;
+      white-space: nowrap;
+      background: var(--night);
+      border: 2px solid var(--brass);
+      border-radius: 0.45rem;
+      box-shadow: 0 3px 0 rgba(32, 35, 34, 0.14);
+      cursor: pointer;
+      transition: background-color 150ms ease, transform 150ms ease,
+        box-shadow 150ms ease;
+    }
+
+    .roll-button:hover {
+      background: #2b3031;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 0 rgba(32, 35, 34, 0.14);
+    }
+
+    .roll-button:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 rgba(32, 35, 34, 0.14);
+    }
+
+    .roll-button:focus-visible {
+      outline: 3px solid rgba(168, 118, 43, 0.45);
+      outline-offset: 3px;
+    }
+
+    .roll-icon {
+      width: 1.25rem;
+      height: 1.25rem;
+      flex: none;
+    }
+
     .results {
       margin-top: clamp(0.9rem, 2vw, 1.25rem);
     }
@@ -670,6 +715,189 @@
 
     .outcome-lose {
       color: var(--lose);
+    }
+
+    .roll-result {
+      width: min(100%, 45rem);
+      margin: 0.6rem auto;
+      padding: 0.8rem 1rem;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid var(--rule);
+      border-radius: 0.6rem;
+    }
+
+    .roll-result[hidden] {
+      display: none;
+    }
+
+    .roll-result.is-fresh {
+      animation: roll-reveal 220ms ease-out;
+    }
+
+    @keyframes roll-reveal {
+      from { opacity: 0.4; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .roll-result-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.55rem;
+    }
+
+    .roll-caption {
+      color: var(--muted-ink);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+
+    .roll-verdict {
+      min-width: 0;
+      text-align: right;
+    }
+
+    .roll-winner {
+      display: block;
+      font-size: 1rem;
+      font-weight: 850;
+      line-height: 1.25;
+    }
+
+    .roll-result[data-winner="player-one"] .roll-winner {
+      color: var(--win);
+    }
+
+    .roll-result[data-winner="player-two"] .roll-winner {
+      color: var(--lose);
+    }
+
+    .roll-result[data-winner="none"] .roll-winner {
+      color: #646867;
+    }
+
+    .roll-ruling,
+    .roll-meta {
+      color: var(--muted-ink);
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .rolled-pools {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .rolled-pool {
+      --pool-color: var(--win);
+      --face-fill: rgba(0, 166, 180, 0.12);
+      min-width: 0;
+      padding-left: 0.65rem;
+      border-left: 3px solid var(--pool-color);
+    }
+
+    .rolled-pool-right {
+      --pool-color: var(--lose);
+      --face-fill: rgba(118, 47, 42, 0.1);
+    }
+
+    .roll-pool-name {
+      margin: 0;
+      color: var(--pool-color);
+      font-size: 0.875rem;
+      font-weight: 750;
+      line-height: 1.3;
+    }
+
+    .roll-total-line {
+      min-height: 2.5rem;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      color: var(--pool-color);
+    }
+
+    .roll-total {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 2rem;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .roll-success-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .roll-raw-total {
+      opacity: 0.7;
+      font-size: 1.4rem;
+    }
+
+    .roll-transform {
+      color: var(--muted-ink);
+      font-size: 1rem;
+    }
+
+    .roll-meta {
+      display: block;
+    }
+
+    .rolled-dice {
+      max-height: 4.75rem;
+      margin-top: 0.45rem;
+      padding: 0.1rem 0.1rem 0.2rem;
+      display: flex;
+      align-content: flex-start;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    .roll-chain {
+      max-width: 100%;
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.15rem;
+    }
+
+    .roll-face {
+      width: 1.65rem;
+      height: 1.65rem;
+      display: inline-grid;
+      place-items: center;
+      color: var(--muted-ink);
+      font-size: 0.8rem;
+      line-height: 1;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px dashed #9c9f9a;
+      border-radius: 0.3rem;
+    }
+
+    .roll-face.is-success {
+      color: var(--pool-color);
+      font-weight: 850;
+      background: var(--face-fill);
+      border: 1px solid var(--pool-color);
+    }
+
+    .roll-face.is-explosion {
+      border-color: var(--brass);
+      box-shadow: inset 0 0 0 1px rgba(168, 118, 43, 0.2);
+    }
+
+    .roll-chain-arrow {
+      color: var(--brass);
+      font-size: 0.75rem;
+      font-weight: 800;
     }
 
     .math-details {
@@ -997,6 +1225,10 @@
       .versus-column {
         grid-column: 1 / -1;
         grid-row: 2;
+        display: grid;
+        grid-template-columns: 2.15rem minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 0.5rem;
         padding: 0.25rem 0 0;
       }
 
@@ -1060,7 +1292,37 @@
 
       .defender-control {
         width: min(100%, 12.5rem);
-        margin-top: 0.8rem;
+        margin: 0 auto;
+      }
+
+      .roll-button {
+        width: auto;
+        min-height: 2.5rem;
+        margin: 0;
+        padding: 0.5rem 0.55rem;
+        gap: 0.35rem;
+        font-size: 0.8rem;
+      }
+
+      .roll-icon {
+        width: 1.05rem;
+        height: 1.05rem;
+      }
+
+      .roll-result {
+        padding: 0.7rem 0.65rem;
+      }
+
+      .rolled-pools {
+        gap: 0.65rem;
+      }
+
+      .rolled-pool {
+        padding-left: 0.45rem;
+      }
+
+      .roll-winner {
+        font-size: 0.9rem;
       }
 
       .math-pools {
@@ -1087,6 +1349,7 @@
       *::after {
         scroll-behavior: auto !important;
         transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
       }
     }
   </style>
@@ -1100,7 +1363,7 @@
 
       <main class="workspace">
         <div class="intro-notes">
-          <p>Combinatorics, not simulated rolls.</p>
+          <p>Combinatorics, not simulated rolls</p>
           <p>Every possible success total is counted, then the two pools are compared.</p>
         </div>
 
@@ -1182,6 +1445,15 @@
                 <span data-option="player-two">Player 2</span>
               </div>
             </section>
+            <button class="roll-button" type="button" data-role="roll-button" aria-label="Roll Player 1 versus Player 2" aria-controls="standard-rolled-result">
+              <svg class="roll-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" stroke-width="1.8" />
+                <circle cx="7.5" cy="7.5" r="1.5" fill="currentColor" />
+                <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+                <circle cx="16.5" cy="16.5" r="1.5" fill="currentColor" />
+              </svg>
+              <span>Roll It</span>
+            </button>
           </div>
 
           <fieldset class="player-two">
@@ -1264,6 +1536,9 @@
             </div>
           </figure>
 
+          <section class="roll-result" id="standard-rolled-result" data-role="roll-result" aria-label="Rolled versus result" hidden></section>
+          <p class="screen-reader-status" data-role="roll-status" aria-live="polite" aria-atomic="true"></p>
+
           <details class="math-details">
             <summary>
               <span class="math-summary-show">Show the Math</span>
@@ -1284,7 +1559,8 @@
           data-mode="skilled"
           aria-labelledby="skilled-case-title"
         >
-          
+          <h2 class="test-case-title" id="skilled-case-title">Skilled Player vs Unskilled Player</h2>
+
           <section class="players" aria-label="Skilled and unskilled dice pools">
             <fieldset class="player-one">
               <legend>Skilled Player dice pool</legend>
@@ -1357,6 +1633,15 @@
                   <span data-option="player-two">Unskilled</span>
                 </div>
               </section>
+              <button class="roll-button" type="button" data-role="roll-button" aria-label="Roll Skilled Player versus Unskilled Player" aria-controls="skilled-rolled-result">
+                <svg class="roll-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" stroke-width="1.8" />
+                  <circle cx="7.5" cy="7.5" r="1.5" fill="currentColor" />
+                  <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+                  <circle cx="16.5" cy="16.5" r="1.5" fill="currentColor" />
+                </svg>
+                <span>Roll It</span>
+              </button>
             </div>
 
             <fieldset class="player-two">
@@ -1438,6 +1723,9 @@
                 </div>
               </div>
             </figure>
+
+            <section class="roll-result" id="skilled-rolled-result" data-role="roll-result" aria-label="Rolled skilled versus unskilled result" hidden></section>
+            <p class="screen-reader-status" data-role="roll-status" aria-live="polite" aria-atomic="true"></p>
 
             <details class="math-details">
               <summary>
@@ -1699,6 +1987,112 @@
     }
     // END PROBABILITY ENGINE
 
+    // A single interactive roll is separate from the combinatorial engine.
+    // Rejection sampling avoids modulo bias when drawing a uniform d6 face.
+    const D6_RANDOM_LIMIT = 2 ** 32 - (2 ** 32 % 6);
+    const d6RandomWord = new Uint32Array(1);
+
+    function rollD6() {
+      if (typeof globalThis.crypto?.getRandomValues !== "function") {
+        return Math.floor(Math.random() * 6) + 1;
+      }
+
+      do {
+        globalThis.crypto.getRandomValues(d6RandomWord);
+      } while (d6RandomWord[0] >= D6_RANDOM_LIMIT);
+
+      return d6RandomWord[0] % 6 + 1;
+    }
+
+    function rollPool(
+      diceCount,
+      shade = DIE_SHADES.black,
+      openEnded = false,
+      nextDie = rollD6
+    ) {
+      if (!Number.isInteger(diceCount) || diceCount < 0 || diceCount > MAX_TYPED_DICE) {
+        throw new RangeError(`Dice pools must contain 0 to ${MAX_TYPED_DICE} dice.`);
+      }
+
+      const chains = Array.from({ length: diceCount }, () => []);
+      const passes = [];
+      let pendingDice = Array.from({ length: diceCount }, (_, index) => index);
+      let successes = 0;
+      let totalRolls = 0;
+
+      // Roll every original die before any rerolls. Each later pass contains
+      // only the dice that rolled six in the preceding pass, in pool order.
+      while (pendingDice.length) {
+        // Only a broken random source could practically reach this guard.
+        if (passes.length >= 1000) {
+          throw new RangeError("The open-ended roll did not terminate.");
+        }
+
+        const pass = [];
+        const nextPendingDice = [];
+
+        for (const dieIndex of pendingDice) {
+          const face = nextDie();
+          if (!Number.isInteger(face) || face < 1 || face > 6) {
+            throw new RangeError("A d6 roll must be an integer from 1 to 6.");
+          }
+
+          chains[dieIndex].push(face);
+          pass.push(face);
+          totalRolls += 1;
+          if (face >= shade.targetNumber) successes += 1;
+          // Sampling a real chain needs no probability-enumeration cap:
+          // every six counts as a success and rolls again until a non-six.
+          if (openEnded && face === 6) nextPendingDice.push(dieIndex);
+        }
+
+        passes.push(pass);
+        pendingDice = nextPendingDice;
+      }
+
+      return { chains, passes, successes, totalRolls };
+    }
+
+    function resolveRolledTest(leftPool, rightPool, mode = "standard", defender = "none") {
+      const leftSuccesses = leftPool.successes;
+      const rightSuccesses =
+        mode === "skilled"
+          ? Math.floor(rightPool.successes / 2)
+          : rightPool.successes;
+      const tied = leftSuccesses === rightSuccesses;
+      const winner =
+        leftSuccesses > rightSuccesses
+          ? "player-one"
+          : leftSuccesses < rightSuccesses
+            ? "player-two"
+            : defender === "player-one" || defender === "player-two"
+              ? defender
+              : "none";
+
+      return { leftSuccesses, rightSuccesses, tied, winner };
+    }
+
+    function rollVersusTest(settings, mode = "standard", nextDie = rollD6) {
+      const leftPool = rollPool(
+        settings.leftDice,
+        DIE_SHADES[settings.leftShade],
+        settings.leftOpenEnded,
+        nextDie
+      );
+      const rightPool = rollPool(
+        settings.rightDice,
+        DIE_SHADES[settings.rightShade],
+        settings.rightOpenEnded,
+        nextDie
+      );
+
+      return {
+        leftPool,
+        rightPool,
+        ...resolveRolledTest(leftPool, rightPool, mode, settings.defender)
+      };
+    }
+
     const MAX_TYPED_DICE = 50;
     const DEFENDER_BY_POSITION = Object.freeze({
       "-1": "player-one",
@@ -1748,6 +2142,9 @@
         rightShadePicker: rightShade.closest(".shade-picker"),
         defenderControl: requiredElement(root, "defender-control"),
         defenderSlider: requiredElement(root, "defender-slider"),
+        rollButton: requiredElement(root, "roll-button"),
+        rollResult: requiredElement(root, "roll-result"),
+        rollStatus: requiredElement(root, "roll-status"),
         bar: requiredElement(root, "result-bar"),
         barWin: requiredElement(root, "bar-win"),
         barTie: requiredElement(root, "bar-tie"),
@@ -1770,6 +2167,126 @@
       const current = Number(slider.value);
       const fill = ((current - minimum) / (maximum - minimum)) * 100;
       slider.style.setProperty("--fill", `${fill}%`);
+    }
+
+    function successLabel(count) {
+      return count === 1 ? "success" : "successes";
+    }
+
+    function rolledPoolMarkup(pool, comparisonSuccesses, name, shade, openEnded, side, halved) {
+      const rerolls = pool.totalRolls - pool.chains.length;
+      const metadata =
+        `${shade.letter} · ${pool.chains.length} ${pool.chains.length === 1 ? "die" : "dice"}` +
+        (rerolls ? ` · +${rerolls} ${rerolls === 1 ? "reroll" : "rerolls"}` : "") +
+        (halved ? " · halved, rounded down" : "");
+      const rawTotal = halved
+        ? `<strong class="roll-total roll-raw-total">${pool.successes}</strong>
+           <span class="roll-transform" aria-label="halved and rounded down to">→</span>`
+        : "";
+      const diceMarkup = pool.passes.map((pass, passIndex) => {
+        const passDescription = passIndex === 0
+          ? "Initial roll"
+          : `Reroll pass ${passIndex}`;
+        const dieIndices = pool.chains.reduce((indices, chain, dieIndex) => {
+          if (chain.length > passIndex) indices.push(dieIndex);
+          return indices;
+        }, []);
+        const faces = pass.map((face, rollIndex) => {
+          const success = face >= shade.targetNumber;
+          const explosion = openEnded && face === 6;
+          const dieIndex = dieIndices[rollIndex];
+          const description =
+            `${passDescription}, die ${dieIndex + 1}: ${face}. ` +
+            `${success ? "Success" : "Failure"}${explosion ? "; roll again" : ""}.`;
+          return `<span class="roll-chain" data-pass="${passIndex}" role="listitem"
+              aria-label="${description}" title="${description}">` +
+            `<span class="roll-face${success ? " is-success" : ""}${explosion ? " is-explosion" : ""}"
+              aria-hidden="true" title="${success ? "Success" : "Failure"}${explosion ? "; roll again" : ""}">${face}</span></span>`;
+        }).join("");
+        const separator = passIndex
+          ? `<span class="roll-chain" role="presentation"><span class="roll-chain-arrow"
+              aria-hidden="true" title="${passDescription}">→</span></span>`
+          : "";
+        return separator + faces;
+      }).join("");
+
+      return `
+        <div class="rolled-pool rolled-pool-${side}">
+          <p class="roll-pool-name">${name}</p>
+          <div class="roll-total-line">
+            ${rawTotal}
+            <strong class="roll-total">${comparisonSuccesses}</strong>
+            <span class="roll-success-label">${successLabel(comparisonSuccesses)}</span>
+          </div>
+          <span class="roll-meta">${metadata}</span>
+          <div class="rolled-dice" role="list" aria-label="${name} die results">${diceMarkup}</div>
+        </div>`;
+    }
+
+    function renderRolledResult(calculator) {
+      const { config, state, elements } = calculator;
+      const result = state.lastRoll;
+      const winnerText = result.winner === "none"
+        ? "Tie"
+        : `${result.winner === "player-one" ? config.leftName : config.rightName} wins`;
+      const ruling = result.tied
+        ? `${result.leftSuccesses} = ${result.rightSuccesses} · ${result.winner === "none" ? "no defender" : "defender wins"}`
+        : `${result.leftSuccesses} ${result.winner === "player-one" ? "&gt;" : "&lt;"} ${result.rightSuccesses}`;
+
+      elements.rollResult.innerHTML = `
+        <div class="roll-result-heading">
+          <span class="roll-caption">Rolled result</span>
+          <div class="roll-verdict">
+            <strong class="roll-winner">${winnerText}</strong>
+            <span class="roll-ruling">${ruling}</span>
+          </div>
+        </div>
+        <div class="rolled-pools">
+          ${rolledPoolMarkup(result.leftPool, result.leftSuccesses, config.leftName,
+            DIE_SHADES[state.leftShade], state.leftOpenEnded, "left", false)}
+          ${rolledPoolMarkup(result.rightPool, result.rightSuccesses, config.rightName,
+            DIE_SHADES[state.rightShade], state.rightOpenEnded, "right", config.mode === "skilled")}
+        </div>`;
+      elements.rollResult.dataset.winner = result.winner;
+      elements.rollResult.hidden = false;
+      elements.rollResult.classList.remove("is-fresh");
+      void elements.rollResult.offsetWidth;
+      elements.rollResult.classList.add("is-fresh");
+
+      const rightSummary = config.mode === "skilled"
+        ? `${result.rightPool.successes} rolled ${successLabel(result.rightPool.successes)}, ` +
+          `halved and rounded down to ${result.rightSuccesses}`
+        : `${result.rightSuccesses} ${successLabel(result.rightSuccesses)}`;
+      elements.rollStatus.textContent =
+        `Roll ${state.rollCount}. ${config.leftName}: ${result.leftSuccesses} ` +
+        `${successLabel(result.leftSuccesses)}. ${config.rightName}: ${rightSummary}. ` +
+        `${winnerText}.` +
+        (result.tied && result.winner !== "none" ? " Equal totals; the defender wins the tie." : "");
+    }
+
+    function clearRolledResult(calculator) {
+      calculator.state.lastRoll = null;
+      calculator.elements.rollResult.hidden = true;
+      calculator.elements.rollResult.classList.remove("is-fresh");
+      calculator.elements.rollStatus.textContent = "";
+    }
+
+    function connectRollControl(calculator) {
+      const { config, state, elements } = calculator;
+      elements.rollButton.addEventListener("click", () => {
+        try {
+          state.lastRoll = rollVersusTest(state, config.mode);
+          state.rollCount += 1;
+          renderRolledResult(calculator);
+        } catch (error) {
+          clearRolledResult(calculator);
+          elements.rollStatus.textContent = "Could not finish this roll. Please try again.";
+          console.error(error);
+        }
+      });
+      elements.rollResult.addEventListener("animationend", () => {
+        elements.rollResult.classList.remove("is-fresh");
+      });
     }
 
     function placeOutcomeLabels(calculator) {
@@ -2474,6 +2991,7 @@
     }
 
     function scheduleRender(calculator) {
+      clearRolledResult(calculator);
       if (calculator.state.renderFrame !== null) {
         cancelAnimationFrame(calculator.state.renderFrame);
       }
@@ -2658,6 +3176,8 @@
           defender: "none",
           strictUnits: null,
           resolvedUnits: null,
+          lastRoll: null,
+          rollCount: 0,
           renderFrame: null
         },
         resizeObserver: null
@@ -2670,6 +3190,7 @@
       connectOpenEndedControl(calculator, "left");
       connectOpenEndedControl(calculator, "right");
       connectDefenderControl(calculator);
+      connectRollControl(calculator);
 
       if ("ResizeObserver" in window) {
         calculator.resizeObserver = new ResizeObserver(() =>
@@ -2697,6 +3218,10 @@
       comparePoolDistributions,
       resolveDefenderTies,
       formatPercent,
+      rollD6,
+      rollPool,
+      resolveRolledTest,
+      rollVersusTest,
       diceShades: DIE_SHADES,
       openEndedDiceShades: OPEN_ENDED_SHADES,
       openEndedRerollCap: OPEN_ENDED_REROLL_CAP,
